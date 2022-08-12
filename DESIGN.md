@@ -36,9 +36,23 @@ melange provides support for the following built-in primitive types.
 
 ### Pointers
 
-Support for pointers is done through the usual `& : T -> *T` and `* : *T -> T`
-operators, where `*T` is the type of a pointer to a value of type `T`. Hence,
-`x: T` ⇒ `&x: *T` and `p: *T` ⇒ `*p: T`.
+Support for pointers is done through the usual `raw : T -> raw T` and `* : raw T -> T`
+operators, where `raw T` is the type of a pointer to a value of type `T`. Hence,
+`x: T` ⇒ `raw x: raw T` and `p: raw T` ⇒ `*p: T`.
+
+#### Pointer semantics
+
+TBD
+
+### References
+
+Support for pointers is done through the usual `& : T -> &T` and `* : &T -> T`
+operators, where `&T` is the type of a reference to a value of type `T`. Hence,
+`x: T` ⇒ `&x: &T` and `p: &T` ⇒ `*p: T`.
+
+#### Reference semantics
+
+TBD
 
 ### Arrays
 
@@ -94,13 +108,13 @@ Enums are declared by writing a sequence of `|` separated variants, variants
 being a name followed by a tuple type:
 ```
 type Shape :=
-	| Circle (Point, f64)
-	| Triangle (Point, Point, Point)
-	| Square (Point, Point).
+    | Circle (Point, f64)
+    | Triangle (Point, Point, Point)
+    | Square (Point, Point).
 
 type Orientation :=
-	| Direct
-	| Indirect.
+    | Direct
+    | Indirect.
 ```
 
 If the type is public, then every variant and their field are made public.
@@ -116,7 +130,9 @@ If the rhs of a type declaration is a pointer type, an array type, a tuple type
 or the name of an other type, then the type declaration creates a type alias
 that is strictly equivalent to the RHS.
 
-## Variables and destructuring
+## Variables
+
+### Declaration
 
 Variables are declared using the `let` keyword:
 ```
@@ -129,6 +145,11 @@ let y := 2.
 Note: the default type for integer literals is `i32`, and for floating point
 literals it is `f32`.
 
+Mutable variables can be declared using the `mut` modifier:
+```
+let mut z := 23.
+```
+
 If the value on the rhs is a tuple or a record, the `let` binding can
 be used to destructure it into simpler parts:
 ```
@@ -137,6 +158,21 @@ let Point x y := p.
 let (z, w) := (10, 20).
 ```
 After destructuring, the original variable is destroyed.
+
+When destructuring, one can declare mutable some of the variables:
+```
+let p := Point 3.0 2.0.
+let Point (mut x) y := p.
+```
+
+### Assignment
+
+When a variable is declared as mutable, it can be reassigned using the `<-`
+operator:
+```
+let mut p := Point 1.0 0.0.
+p~y <- p~y.
+```
 
 ## Functions
 
@@ -148,9 +184,9 @@ and `end`.
 ```
 fun new_point_with_a_tweak (x y: f64) : Point 
 begin
-	let z := x + y.
-	let w := x - y.
-	return Point (z + w) (z-w).
+    let z := x + y.
+    let w := x - y.
+    return Point (z + w) (z-w).
 end
 ```
 If the body consists of a single expression, the `begin`-`end` pair can be
@@ -182,6 +218,31 @@ let p22 := new_point_with_a_tweak 1.0 1.0.
 Functions can be curried, i.e. partially applied to create new functions:
 ```
 let vertical_point : f64 -> Point := Point 0.0.
+```
+
+### Type methods
+
+```
+impl Point
+    fun new (x y: f64) : Point := Point x y. 
+
+    fun translate (self) (by: Point) : Point begin
+        let Point (mut x1) (mut y1) := self.
+        let Point x2 y2 := by.
+		return Point (x1 + x2) (y1 + y2).
+    end
+
+	fun translate2 (mut self) (by: Point) : Point begin
+		self~x <- by~x.
+		self~y <- by~y.
+		return self.
+	end
+
+	fun translate3 (&mut self) (by: Point) begin
+		self~x <- by~x.
+		self~y <- by~y.
+	end
+end
 ```
 
 ## Control flow
@@ -232,7 +293,7 @@ not.
 
 ```
 if x == y then
-	do_something.
+    do_something.
 end
 ```
 
@@ -240,9 +301,9 @@ end
 
 ```
 if x == y then 
-	do_something.
+    do_something.
 else
-	do_something_else.
+    do_something_else.
 end
 ```
 
@@ -251,11 +312,11 @@ need to nest `if` expressions).
 
 ```
 if x == y then 
-	do_something.
+    do_something.
 elif x == z then
-	do_something_else.
+    do_something_else.
 else
-	really_do_something.
+    really_do_something.
 end
 ```
 
@@ -269,9 +330,9 @@ NOTE: To be expanded with `or` and `and` operators.
 
 ```
 if s is Shape~Circle (Point 0.0 y) r then
-	do_something_with y.
+    do_something_with y.
 else
-	do_something_with_else_with s.
+    do_something_with_else_with s.
 end
 ```
 
@@ -303,11 +364,11 @@ TBD
 
 ```
 loop 
-	print x.
+    print x.
 
-	if 2 < 3 then
-		break.
-	end
+    if 2 < 3 then
+        break.
+    end
 end
 ```
 
@@ -315,10 +376,35 @@ end
 
 ```
 for x in y do
-	break.
+    break.
 end
 ```
 NOTE: `x` can be an irrefutable pattern.
+
+## Annotations
+
+### Language intrinsics
+
+As previously mentioned, a type can be marked as copy, to disable move
+semantics. This is done using the `#[copy]` annotation
+
+```
+#[copy]
+type State :=
+	| Normal
+	| Accepting.
+```
+
+The top-level `#[no_mut]` disable using mutable variable and mutable references
+throughout the code base.
+
+```
+#![no_mut]
+```
+
+### User-defined annotations
+
+TBD
 
 # Moves & copies
 
@@ -331,5 +417,3 @@ after that operation, the data can no longer be accessed through that variable.
 However, if a type is marked as `copy`, then the data will no longer be moved
 around but copied. In that case, if a variable is used in an expression, it will
 still be usable after that.
-
-To mark a type as `copy` : TBD
