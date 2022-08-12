@@ -4,6 +4,7 @@ use crate::token::{Kind, Token};
 use core::str::Chars;
 use std::iter::Peekable;
 
+// Processes about 65Mb/s on my machine
 #[derive(Debug, Clone)]
 pub struct Scanner<'src> {
     stream: Peekable<Chars<'src>>,
