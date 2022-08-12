@@ -16,6 +16,7 @@ pub enum Kind {
     Star,
     Amp,
     Plus,
+    Hash,
 
     // Ambiguous tokens
     Colon,
@@ -102,6 +103,7 @@ impl Kind {
             Kind::Star => Some("*"),
             Kind::Amp => Some("&"),
             Kind::Plus => Some("+"),
+            Kind::Hash => Some("#"),
             Kind::Colon => Some(":"),
             Kind::Underscore => Some("_"),
             Kind::Minus => Some("-"),

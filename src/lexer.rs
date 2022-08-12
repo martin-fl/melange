@@ -125,81 +125,82 @@ impl<'src> Scanner<'src> {
         self.skip_whitespace();
 
         macro_rules! tok {
-            ($c:literal , $kind:expr) => {
+            ($kind:expr) => {
                 Token::new($kind, self.make_span(), None)
             };
         }
 
         self.start = self.pos;
         self.nextc().map(|c| match c {
-            '[' => tok!('[', Kind::LBrack),
-            ']' => tok!(']', Kind::RBrack),
-            '(' => tok!('(', Kind::LParen),
-            ')' => tok!(')', Kind::RParen),
-            '.' => tok!('.', Kind::Dot),
-            ',' => tok!(',', Kind::Comma),
-            ';' => tok!(';', Kind::Semi),
-            '|' => tok!('|', Kind::Vert),
-            '~' => tok!('~', Kind::Tilde),
-            '*' => tok!('*', Kind::Star),
-            '&' => tok!('&', Kind::Amp),
-            '+' => tok!('+', Kind::Plus),
+            '[' => tok!(Kind::LBrack),
+            ']' => tok!(Kind::RBrack),
+            '(' => tok!(Kind::LParen),
+            ')' => tok!(Kind::RParen),
+            '.' => tok!(Kind::Dot),
+            ',' => tok!(Kind::Comma),
+            ';' => tok!(Kind::Semi),
+            '|' => tok!(Kind::Vert),
+            '~' => tok!(Kind::Tilde),
+            '*' => tok!(Kind::Star),
+            '&' => tok!(Kind::Amp),
+            '+' => tok!(Kind::Plus),
+            '#' => tok!(Kind::Hash),
 
             ':' => match self.peekc() {
                 Some('=') => {
                     self.nextc();
-                    tok!(":=", Kind::ColonEq)
+                    tok!(Kind::ColonEq)
                 }
-                _ => tok!(':', Kind::Colon),
+                _ => tok!(Kind::Colon),
             },
 
             '-' => match self.peekc() {
                 Some('>') => {
                     self.nextc();
-                    tok!("->", Kind::RArrow)
+                    tok!(Kind::RArrow)
                 }
-                _ => tok!('-', Kind::Minus),
+                _ => tok!(Kind::Minus),
             },
 
             '=' => match self.peekc() {
                 Some('>') => {
                     self.nextc();
-                    tok!("=>", Kind::RFatArrow)
+                    tok!(Kind::RFatArrow)
                 }
-                _ => tok!('=', Kind::Eq),
+                _ => tok!(Kind::Eq),
             },
 
             '<' => match self.peekc() {
                 Some('-') => {
                     self.nextc();
-                    tok!("<-", Kind::LArrow)
+                    tok!(Kind::LArrow)
                 }
                 Some('=') => {
                     self.nextc();
-                    tok!("<=", Kind::LtEq)
+                    tok!(Kind::LtEq)
                 }
-                _ => tok!('<', Kind::Lt),
+                _ => tok!(Kind::Lt),
             },
 
             '>' => match self.peekc() {
                 Some('=') => {
                     self.nextc();
-                    tok!(">=", Kind::GtEq)
+                    tok!(Kind::GtEq)
                 }
-                _ => tok!('>', Kind::Gt),
+                _ => tok!(Kind::Gt),
             },
 
             '/' => match self.peekc() {
                 Some('=') => {
                     self.nextc();
-                    tok!("/=", Kind::Neq)
+                    tok!(Kind::Neq)
                 }
-                _ => tok!('/', Kind::Slash),
+                _ => tok!(Kind::Slash),
             },
 
             '_' => match self.peekc() {
                 Some(c) if is_ident(c) => self.scan_ident('_'),
-                _ => tok!('_', Kind::Underscore),
+                _ => tok!(Kind::Underscore),
             },
 
             '"' => self.scan_str().expect("couldn't scan string literal"),
