@@ -21,7 +21,7 @@ trait ParserExtension {
 
 impl ParserExtension for TokenStream<'_> {
     fn parse(&mut self, kind: Kind) -> Result<Token> {
-        self.next_if_is(Kind::Ident).ok_or(Error::UnexpectedToken)
+        self.next_if_is(kind).ok_or(Error::UnexpectedToken)
     }
 }
 
