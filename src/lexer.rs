@@ -211,11 +211,74 @@ impl<'src> Scanner<'src> {
         })
     }
 
-    pub fn stream(&'src mut self) -> impl Iterator<Item = Token> + 'src {
-        core::iter::from_fn(|| self.scan())
+    pub fn stream(self) -> TokenStream<'src> {
+        TokenStream {
+            iter: self,
+            peeked: None,
+        }
     }
 }
 
 fn is_ident(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
+}
+
+pub struct TokenStream<'src> {
+    iter: Scanner<'src>,
+    peeked: Option<Token>,
+}
+
+impl TokenStream<'_> {
+    pub fn next(&mut self) -> Option<Token> {
+        if self.peeked.is_some() {
+            self.peeked.take()
+        } else {
+            self.iter.scan()
+        }
+    }
+
+    pub fn peek(&mut self) -> Option<Token> {
+        if self.peeked.is_none() {
+            self.peeked = self.next();
+        }
+        self.peeked
+    }
+
+    pub fn next_if(&mut self, f: impl Fn(&Token) -> bool) -> Option<Token> {
+        if self.peek().filter(f).is_some() {
+            self.next()
+        } else {
+            None
+        }
+    }
+
+    pub fn next_if_is(&mut self, kind: Kind) -> Option<Token> {
+        self.next_if(|t| t.kind() == kind)
+    }
+
+    pub fn next_while(&mut self, f: impl Fn(&Token) -> bool) -> Vec<Token> {
+        let mut buf = Vec::new();
+
+        while let Some(c) = self.next_if(&f) {
+            buf.push(c)
+        }
+
+        buf
+    }
+
+    pub fn skip(&mut self) {
+        self.next();
+    }
+
+    pub fn skip_while(&mut self, f: impl Fn(&Token) -> bool) {
+        while let Some(_) = self.next_if(&f) {}
+    }
+}
+
+impl Iterator for TokenStream<'_> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next()
+    }
 }
