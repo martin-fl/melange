@@ -76,20 +76,27 @@ type TypeName := ... .
 
 Records (structs) are declared by giving a list of (identifier, type) pairs :
 ```
-type Person := (name: [char; 12]) (age: u32).
+type Person := record
+    (name: [char; 12]) 
+    (age: u32).
 ```
-Fields with the same type can be gathered together, hence `type Point = (x: f64)
-(y: f64).` and `type Point = (x y: f64).` declare the same type.
+Fields with the same type can be gathered together, hence `type Point = record (x: f64)
+(y: f64).` and `type Point = record (x y: f64).` declare the same type.
 
 Fields are accessed using the `~` operator : `p: Person` ⇒ `p~age: u32`. They 
 are private by default, but can be made public with the `pub` keyword` :
 ```
 // `name` is accessible outside the module
-type Person := (pub name: [char; 12]) (age: u32).
+type Person := record
+    (pub name: [char; 12]) 
+    (age: u32).
 // both `x` and `y` and are accessible outside the module
-type Point := (pub x y: f64).
+type Point := record 
+    (pub x y: f64).
 // only `x` is accessible outside the module
-type PointBis := (pub x: f64) (y: f64).
+type PointBis := record
+    (pub x: f64) 
+    (y: f64).
 ```
 Record literals are written like function application with the record name as
 the function name, i.e if `x: f64` and `y: f64` then `Point x y : Point`. A
@@ -427,7 +434,7 @@ whose name is the name of the file. Inside a module, one can define a submodule,
 or declare an existing module as a submodule, using the `module` keyword:
 ```
 // file A
-pub type Point := (x y: f64).
+pub type Point := record (x y: f64).
 
 // file B
 module A. // A is now a submodule of B
@@ -435,7 +442,7 @@ type PointB := A~Point.
 
 // C is a submodule, defined in file B
 module C begin
-    type PointC := (y z: f64).
+    type PointC := record (y z: f64).
 end
 ```
 One can access the items defined inside a submodule by using the projection 
@@ -449,7 +456,7 @@ module B.
 module C. 
 
 // file B
-pub type Point := (x y: f64).
+pub type Point := record (x y: f64).
 
 // file C
 import root~B~PointB. // imports the PointB type from file B
@@ -460,11 +467,11 @@ keyword.
 You can rename imports using the `as` keyword:
 ```
 module Sub1 begin
-    type Point := (x y: f64).
+    type Point := record (x y: f64).
 end
 
 module Sub2 begin
-    type Point := (x y z: f64).
+    type Point := record (x y z: f64).
 end
 
 import Sub1~Point as Point2D.
