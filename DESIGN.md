@@ -15,10 +15,6 @@ of the following:
 
 Comments are written using the usual `//` marker.
 
-## Modules 
-
-TBD
-
 ## Types
 
 ### Primitive types
@@ -354,9 +350,52 @@ let new_s := match (s, o) with
 end.
 ```
 
-#### `guard` expressions
+#### `when` expressions
 
-TBD
+`when` expressions are guards, who successively tests for boolean conditions 
+until one evaluates to true and evaluates the expression associated to that 
+condition. After that, it jumps out of the guard and continues the execution.
+```
+when 
+| x = 2 => print "x is 2"
+| x = 4 => print "wow, x is 4!"
+| x = 8 => begin 
+                print "wait, x is 8?".
+                print "WOW! x REALLY IS 8!".
+            end
+end
+```
+`when` expression can have an `else` branch that will be a fallback if none of 
+the conditions are true:
+```
+when 
+| x = y => print "x = y"
+| x = z => print "x = z"
+else print ":-("
+end
+```
+
+This is especially useful when defining functions, instead of using an `if` 
+tower:
+```
+fun piecewise (x: f64) : f64 := 
+    if x < 0.0 then
+        0.0
+    elif x < 1.0 then
+        x * x
+    elif x < 2.0 then
+        x * x * x
+    else
+        8.0
+    end.
+
+fun piecewise (x: f64) : f64 := when 
+    | x < 0.0 => 0.0
+    | x < 1.0 => x*x
+    | x < 2.0 => x*x*x
+    else 8.0
+    end.
+```
 
 ### Loops
 
@@ -380,6 +419,57 @@ for x in y do
 end
 ```
 NOTE: `x` can be an irrefutable pattern.
+
+## Modules and submodules
+
+A module is a compilation unit, identified by a name. Each source file a module,
+whose name is the name of the file. Inside a module, one can define a submodule,
+or declare an existing module as a submodule, using the `module` keyword:
+```
+// file A
+pub type Point := (x y: f64).
+
+// file B
+module A. // A is now a submodule of B
+type PointB := A~Point.
+
+// C is a submodule, defined in file B
+module C begin
+    type PointC := (y z: f64).
+end
+```
+One can access the items defined inside a submodule by using the projection 
+operator `~` on the module name.
+
+If you want to access the content of a(nother) submodule, use the `import` 
+keyword and a path:
+```
+// file A
+module B.
+module C. 
+
+// file B
+pub type Point := (x y: f64).
+
+// file C
+import root~B~PointB. // imports the PointB type from file B
+```
+A path can be either relative or absolute; absolute paths starting with the `root`
+keyword.
+
+You can rename imports using the `as` keyword:
+```
+module Sub1 begin
+    type Point := (x y: f64).
+end
+
+module Sub2 begin
+    type Point := (x y z: f64).
+end
+
+import Sub1~Point as Point2D.
+import Sub2~Point as Point3D.
+```
 
 ## Annotations
 
