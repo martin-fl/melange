@@ -8,8 +8,8 @@ use std::iter::Peekable;
 #[derive(Debug, Clone)]
 pub struct Scanner<'src> {
     stream: Peekable<Chars<'src>>,
-    start: usize,
-    pos: usize,
+    start: u32,
+    pos: u32,
 }
 
 #[derive(Debug)]
@@ -34,14 +34,14 @@ impl<'src> Scanner<'src> {
 
     fn nextc(&mut self) -> Option<char> {
         self.stream.next().map(|c| {
-            self.pos += c.len_utf8();
+            self.pos += u32::try_from(c.len_utf8()).unwrap();
             c
         })
     }
 
     fn nextc_if(&mut self, f: impl Fn(char) -> bool) -> Option<char> {
         self.stream.next_if(|&c| f(c)).map(|c| {
-            self.pos += c.len_utf8();
+            self.pos += u32::try_from(c.len_utf8()).unwrap();
             c
         })
     }

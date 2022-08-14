@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Symbol(usize);
+pub struct Symbol(u32);
 
 #[derive(Default, Clone, Debug)]
 pub struct Interner {
@@ -22,7 +22,7 @@ impl Interner {
         if let Some(&sym) = self.syms.get(string.as_str()) {
             return sym;
         } else {
-            let sym = Symbol(self.strings.len());
+            let sym = Symbol(u32::try_from(self.strings.len()).unwrap());
             self.syms.insert(string.clone(), sym);
             self.strings.push(string);
             return sym;
@@ -30,7 +30,7 @@ impl Interner {
     }
 
     pub fn get(&self, sym: Symbol) -> &str {
-        self.strings[sym.0].as_str()
+        self.strings[usize::try_from(sym.0).unwrap()].as_str()
     }
 }
 

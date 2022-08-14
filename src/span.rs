@@ -1,19 +1,19 @@
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct Span {
-    start: usize,
-    len: usize,
+    start: u32,
+    len: u32,
 }
 
 impl Span {
-    pub fn new(start: usize, len: usize) -> Self {
+    pub fn new(start: u32, len: u32) -> Self {
         Self { start, len }
     }
 
-    pub fn start(self) -> usize {
+    pub fn start(self) -> u32 {
         self.start
     }
 
-    pub fn len(self) -> usize {
+    pub fn len(self) -> u32 {
         self.len
     }
 }
