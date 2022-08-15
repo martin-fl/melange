@@ -206,18 +206,30 @@ impl Kind {
             _ => Ident,
         }
     }
+
+    pub fn is_kw(self) -> bool {
+        use Kind::*;
+        match self {
+            Char | Bool | U8 | U16 | U32 | U64 | I8 | I16 | I32 | I64 | F32 | F64 | C32 | C64
+            | Raw | Type | Record | Pub | Let | Mut | Fun | Begin | End | Impl | If | Is | Then
+            | Elif | Else | Match | With | Loop | For | In | Do | Module | Import | Root | When => {
+                true
+            }
+            _ => false,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Token {
     kind: Kind,
     span: Span,
-    lexeme: Option<Symbol>,
+    symbol: Option<Symbol>,
 }
 
 impl Token {
-    pub fn new(kind: Kind, span: Span, lexeme: Option<Symbol>) -> Self {
-        Self { kind, span, lexeme }
+    pub fn new(kind: Kind, span: Span, symbol: Option<Symbol>) -> Self {
+        Self { kind, span, symbol }
     }
 
     pub fn kind(self) -> Kind {
@@ -228,13 +240,13 @@ impl Token {
         self.span
     }
 
-    pub fn lexeme(self) -> Option<Symbol> {
-        self.lexeme
+    pub fn symbol(self) -> Option<Symbol> {
+        self.symbol
     }
 
     pub fn repr(self) -> &'static str {
         self.kind().repr().unwrap_or_else(|| {
-            get(self.lexeme().expect(&format!(
+            get(self.symbol().expect(&format!(
                 "token '{:?}' should have a lexeme but doesn't",
                 self.kind(),
             )))
